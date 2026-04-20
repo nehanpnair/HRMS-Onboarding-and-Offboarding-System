@@ -50,25 +50,25 @@ public class MainGUI {
     }
 
     private static ExitType mapExitType(String value) {
-        if (value == null) return null;
+    if (value == null) return null;
 
-        switch (value.toLowerCase()) {
-            case "resignation":
-                return ExitType.RESIGNED;
+    switch (value.toLowerCase()) {
+        case "resignation":
+            return ExitType.RESIGNATION;
 
-            case "termination":
-                return ExitType.FIRED;
+        case "termination":
+            return ExitType.TERMINATION;
 
-            case "retirement":
-                return ExitType.VRS;   // closest match in your system
+        case "retirement":
+            return ExitType.VRS;
 
-            case "contract end":
-                return ExitType.LAYOFF;
+        case "contract end":
+            return ExitType.LAYOFF;
 
-            default:
-                throw new IllegalArgumentException("Unknown exit type: " + value);
-        }
+        default:
+            throw new IllegalArgumentException("Unknown exit type: " + value);
     }
+}
 
     // ═════════════════════════════════════════════════════════════════════════
     // Entry point
@@ -143,7 +143,6 @@ public class MainGUI {
         IEmployeeProfileData employeeDataRef = dummy;
         documentData = dummy;
 
-        exitData     = exitDataRef;
         employeeData = employeeDataRef;
 
         ExitManager             exitManager      = new ExitManager(exitDataRef);
@@ -153,7 +152,7 @@ public class MainGUI {
         SettlementService       settlementSvc    = new SettlementService(
                 payrollData, leaveData, attendanceData, assetData, employeeDataRef);
         KnowledgeTransferService ktService       = new KnowledgeTransferService();
-
+        exitData     = exitManager;
         offboardingService = new OffboardingService(
             exitManager, interviewManager, proxyClearance, settlementSvc,
             new DocumentGenerator(), new NotificationService(),
