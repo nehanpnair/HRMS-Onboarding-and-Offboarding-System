@@ -10,13 +10,13 @@ import static gui.Theme.*;
 import static gui.UIFactory.*;
 
 /**
- * Account Creation panel.
+ * Account Creation panel with progress tracking.
  */
 public final class OnboardingAccountPanel {
 
     private OnboardingAccountPanel() {}
 
-    public static JPanel build(Employee emp, AccountService accountService) {
+    public static JPanel build(Employee emp, AccountService accountService, OnboardingProgressState progress, Runnable onComplete) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(BG_APP);
         panel.setBorder(new EmptyBorder(24, 24, 24, 24));
@@ -49,26 +49,41 @@ public final class OnboardingAccountPanel {
 
         JPanel detailsCard = card();
         detailsCard.setLayout(new BoxLayout(detailsCard, BoxLayout.Y_AXIS));
-        detailsCard.add(label("Account Credentials", FONT_SMALL, TEXT_MUTED));
+        detailsCard.add(label("Generated Credentials", FONT_SMALL, TEXT_MUTED));
         detailsCard.add(Box.createVerticalStrut(8));
         detailsCard.add(label("Username: " + username, FONT_UI, TEXT_PRIMARY));
         detailsCard.add(label("Password: " + password, FONT_UI, TEXT_PRIMARY));
         content.add(detailsCard);
         content.add(Box.createVerticalStrut(16));
 
+        // Status label
+        JLabel statusLabel = label("", FONT_SMALL, new Color(0x4AC26B));
+        statusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        if (progress.isAccountCreated()) {
+            statusLabel.setText("✔ Account created successfully");
+        }
+
         // Action
         JPanel actionPanel = new JPanel();
         actionPanel.setOpaque(false);
-        JButton createBtn = primaryButton("Create Account");
+        JButton createBtn = primaryButton(progress.isAccountCreated() ? "Account Created" : "Create Account");
+        createBtn.setEnabled(!progress.isAccountCreated());
         createBtn.addActionListener(e -> {
             try {
                 accountService.createAccount(emp.getEmployeeID(), username, password);
-                JOptionPane.showMessageDialog(createBtn, "Account created successfully!\nUsername: " + username, "Success", JOptionPane.INFORMATION_MESSAGE);
+                progress.setAccountCreated(true);
+                statusLabel.setText("✔ Account created successfully");
+                createBtn.setEnabled(false);
+                createBtn.setText("Account Created");
+                if (onComplete != null) onComplete.run();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(createBtn, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                statusLabel.setForeground(new Color(0xFF6B6B));
+                statusLabel.setText("✗ Error: " + ex.getMessage());
             }
         });
         actionPanel.add(createBtn);
+        content.add(statusLabel);
+        content.add(Box.createVerticalStrut(12));
         content.add(actionPanel);
 
         JScrollPane scroll = new JScrollPane(content);

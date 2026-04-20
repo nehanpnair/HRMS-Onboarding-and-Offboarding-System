@@ -11,13 +11,13 @@ import static gui.Theme.*;
 import static gui.UIFactory.*;
 
 /**
- * Training Assignment panel.
+ * Training Assignment panel with progress tracking.
  */
 public final class OnboardingTrainingPanel {
 
     private OnboardingTrainingPanel() {}
 
-    public static JPanel build(Employee emp, TrainingService trainingService) {
+    public static JPanel build(Employee emp, TrainingService trainingService, OnboardingProgressState progress, Runnable onComplete) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(BG_APP);
         panel.setBorder(new EmptyBorder(24, 24, 24, 24));
@@ -52,10 +52,12 @@ public final class OnboardingTrainingPanel {
 
         JRadioButton mandatoryRadio = new JRadioButton("Mandatory Training");
         mandatoryRadio.setSelected(true);
+        mandatoryRadio.setEnabled(!progress.isTrainingAssigned());
         mandatoryRadio.setBackground(BG_CARD);
         mandatoryRadio.setForeground(TEXT_PRIMARY);
 
         JRadioButton optionalRadio = new JRadioButton("Optional Training");
+        optionalRadio.setEnabled(!progress.isTrainingAssigned());
         optionalRadio.setBackground(BG_CARD);
         optionalRadio.setForeground(TEXT_PRIMARY);
 
@@ -68,10 +70,18 @@ public final class OnboardingTrainingPanel {
         content.add(strategyCard);
         content.add(Box.createVerticalStrut(16));
 
+        // Status label
+        JLabel statusLabel = label("", FONT_SMALL, new Color(0x4AC26B));
+        statusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        if (progress.isTrainingAssigned()) {
+            statusLabel.setText("✔ Training assigned successfully");
+        }
+
         // Action
         JPanel actionPanel = new JPanel();
         actionPanel.setOpaque(false);
-        JButton assignBtn = primaryButton("Assign Training");
+        JButton assignBtn = primaryButton(progress.isTrainingAssigned() ? "Training Assigned" : "Assign Training");
+        assignBtn.setEnabled(!progress.isTrainingAssigned());
         assignBtn.addActionListener(e -> {
             try {
                 if (mandatoryRadio.isSelected()) {
@@ -80,12 +90,21 @@ public final class OnboardingTrainingPanel {
                     trainingService.setStrategy(new OptionalTrainingStrategy());
                 }
                 trainingService.assignTraining(emp);
-                JOptionPane.showMessageDialog(assignBtn, "Training assigned successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                progress.setTrainingAssigned(true);
+                statusLabel.setText("✔ Training assigned successfully");
+                mandatoryRadio.setEnabled(false);
+                optionalRadio.setEnabled(false);
+                assignBtn.setEnabled(false);
+                assignBtn.setText("Training Assigned");
+                if (onComplete != null) onComplete.run();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(assignBtn, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                statusLabel.setForeground(new Color(0xFF6B6B));
+                statusLabel.setText("✗ Error: " + ex.getMessage());
             }
         });
         actionPanel.add(assignBtn);
+        content.add(statusLabel);
+        content.add(Box.createVerticalStrut(12));
         content.add(actionPanel);
 
         JScrollPane scroll = new JScrollPane(content);

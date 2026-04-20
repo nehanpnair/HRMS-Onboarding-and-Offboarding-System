@@ -5,18 +5,20 @@ import proxy.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
+import java.text.*;
+import java.util.*;
 
 import static gui.Theme.*;
 import static gui.UIFactory.*;
 
 /**
- * Role-Based Access Control panel.
+ * Role-Based Access Control panel with progress tracking.
  */
 public final class OnboardingAccessPanel {
 
     private OnboardingAccessPanel() {}
 
-    public static JPanel build(Employee emp, RoleAccessProxy accessControl) {
+    public static JPanel build(Employee emp, RoleAccessProxy accessControl, OnboardingProgressState progress, Runnable onComplete) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(BG_APP);
         panel.setBorder(new EmptyBorder(24, 24, 24, 24));
@@ -44,28 +46,64 @@ public final class OnboardingAccessPanel {
         content.add(infoCard);
         content.add(Box.createVerticalStrut(16));
 
+        // Access details card
+        JPanel accessCard = card();
+        accessCard.setLayout(new BoxLayout(accessCard, BoxLayout.Y_AXIS));
+        accessCard.add(label("Access Information", FONT_SMALL, TEXT_MUTED));
+        accessCard.add(Box.createVerticalStrut(8));
+
+        String role = emp.getDepartment() != null ? emp.getDepartment() : "STANDARD";
+        JLabel roleLabel = label("Role: " + role, FONT_UI, TEXT_PRIMARY);
+        JLabel accessLevelLabel = label("Access Level: USER", FONT_UI, TEXT_PRIMARY);
+        JLabel adminAccessLabel = label("Admin Access: —", FONT_UI, TEXT_SECONDARY);
+        JLabel accessStatusLabel = label("Status: Pending", FONT_UI, new Color(0xFFC107));
+
+        accessCard.add(roleLabel);
+        accessCard.add(accessLevelLabel);
+        accessCard.add(adminAccessLabel);
+        accessCard.add(accessStatusLabel);
+        content.add(accessCard);
+        content.add(Box.createVerticalStrut(16));
+
         // Status area
-        JLabel statusLabel = label("No action performed", FONT_SMALL, TEXT_MUTED);
-        statusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel resultLabel = label("", FONT_SMALL, new Color(0x4AC26B));
+        resultLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        if (progress.isAccessControlled()) {
+            resultLabel.setText("✔ Access control verified");
+            accessStatusLabel.setText("Status: Verified");
+            accessStatusLabel.setForeground(new Color(0x4AC26B));
+        }
 
         // Action
         JPanel actionPanel = new JPanel();
         actionPanel.setOpaque(false);
-        JButton checkBtn = primaryButton("Check Admin Access");
+        JButton checkBtn = primaryButton(progress.isAccessControlled() ? "Access Verified" : "Verify Access");
+        checkBtn.setEnabled(!progress.isAccessControlled());
         checkBtn.addActionListener(e -> {
             try {
                 accessControl.performAdminAction(emp);
-                statusLabel.setText("Admin access evaluated - check console for details");
-                statusLabel.setForeground(new Color(0x4AC26B));
+                progress.setAccessControlled(true);
+                resultLabel.setText("✔ Access control verified");
+                accessStatusLabel.setText("Status: Verified");
+                accessStatusLabel.setForeground(new Color(0x4AC26B));
+                adminAccessLabel.setText("Admin Access: DENIED");
+                adminAccessLabel.setForeground(new Color(0xFF6B6B));
+                checkBtn.setEnabled(false);
+                checkBtn.setText("Access Verified");
+                if (onComplete != null) onComplete.run();
             } catch (Exception ex) {
-                statusLabel.setText("Access denied: " + ex.getMessage());
-                statusLabel.setForeground(new Color(0xFF6B6B));
+                resultLabel.setForeground(new Color(0xFF6B6B));
+                resultLabel.setText("✗ Error: " + ex.getMessage());
+                accessStatusLabel.setText("Status: Denied");
+                accessStatusLabel.setForeground(new Color(0xFF6B6B));
+                adminAccessLabel.setText("Admin Access: DENIED");
+                adminAccessLabel.setForeground(new Color(0xFF6B6B));
             }
         });
         actionPanel.add(checkBtn);
         content.add(actionPanel);
         content.add(Box.createVerticalStrut(12));
-        content.add(statusLabel);
+        content.add(resultLabel);
 
         JScrollPane scroll = new JScrollPane(content);
         scroll.setBackground(BG_APP);

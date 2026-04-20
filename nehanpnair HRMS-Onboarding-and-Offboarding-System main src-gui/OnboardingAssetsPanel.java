@@ -5,18 +5,20 @@ import service.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
+import java.text.*;
+import java.util.*;
 
 import static gui.Theme.*;
 import static gui.UIFactory.*;
 
 /**
- * Asset Allocation panel.
+ * Asset Allocation panel with progress tracking.
  */
 public final class OnboardingAssetsPanel {
 
     private OnboardingAssetsPanel() {}
 
-    public static JPanel build(Employee emp, AssetService assetService) {
+    public static JPanel build(Employee emp, AssetService assetService, OnboardingProgressState progress, Runnable onComplete) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(BG_APP);
         panel.setBorder(new EmptyBorder(24, 24, 24, 24));
@@ -48,14 +50,21 @@ public final class OnboardingAssetsPanel {
         assetsCard.setLayout(new BoxLayout(assetsCard, BoxLayout.Y_AXIS));
         assetsCard.add(label("Standard Assets", FONT_SMALL, TEXT_MUTED));
         assetsCard.add(Box.createVerticalStrut(8));
+        
+        // Asset availability note
+        JLabel availabilityLabel = label("Available: Laptop (2), Phone (3)", FONT_SMALL, new Color(0x4AC26B));
+        assetsCard.add(availabilityLabel);
+        assetsCard.add(Box.createVerticalStrut(8));
 
         JCheckBox laptopCheck = new JCheckBox("Laptop");
-        laptopCheck.setSelected(true);
+        laptopCheck.setSelected(!progress.isAssetsAllocated());
+        laptopCheck.setEnabled(!progress.isAssetsAllocated());
         laptopCheck.setBackground(BG_CARD);
         laptopCheck.setForeground(TEXT_PRIMARY);
 
         JCheckBox phoneCheck = new JCheckBox("Phone");
-        phoneCheck.setSelected(true);
+        phoneCheck.setSelected(!progress.isAssetsAllocated());
+        phoneCheck.setEnabled(!progress.isAssetsAllocated());
         phoneCheck.setBackground(BG_CARD);
         phoneCheck.setForeground(TEXT_PRIMARY);
 
@@ -64,10 +73,18 @@ public final class OnboardingAssetsPanel {
         content.add(assetsCard);
         content.add(Box.createVerticalStrut(16));
 
+        // Status label
+        JLabel statusLabel = label("", FONT_SMALL, new Color(0x4AC26B));
+        statusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        if (progress.isAssetsAllocated()) {
+            statusLabel.setText("✔ Assets allocated successfully");
+        }
+
         // Action
         JPanel actionPanel = new JPanel();
         actionPanel.setOpaque(false);
-        JButton allocateBtn = primaryButton("Allocate Assets");
+        JButton allocateBtn = primaryButton(progress.isAssetsAllocated() ? "Assets Allocated" : "Allocate Assets");
+        allocateBtn.setEnabled(!progress.isAssetsAllocated());
         allocateBtn.addActionListener(e -> {
             try {
                 if (laptopCheck.isSelected()) {
@@ -76,12 +93,21 @@ public final class OnboardingAssetsPanel {
                 if (phoneCheck.isSelected()) {
                     assetService.allocateAsset(emp.getEmployeeID(), "Phone");
                 }
-                JOptionPane.showMessageDialog(allocateBtn, "Assets allocated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                progress.setAssetsAllocated(true);
+                statusLabel.setText("✔ Assets allocated successfully");
+                laptopCheck.setEnabled(false);
+                phoneCheck.setEnabled(false);
+                allocateBtn.setEnabled(false);
+                allocateBtn.setText("Assets Allocated");
+                if (onComplete != null) onComplete.run();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(allocateBtn, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                statusLabel.setForeground(new Color(0xFF6B6B));
+                statusLabel.setText("✗ Error: " + ex.getMessage());
             }
         });
         actionPanel.add(allocateBtn);
+        content.add(statusLabel);
+        content.add(Box.createVerticalStrut(12));
         content.add(actionPanel);
 
         JScrollPane scroll = new JScrollPane(content);

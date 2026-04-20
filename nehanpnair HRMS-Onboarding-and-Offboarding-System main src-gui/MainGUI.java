@@ -8,6 +8,13 @@ import integration.*;
 import javax.swing.*;
 
 import data.*;
+import data_impl_sqlite.ClearanceDataSqliteImpl;
+import data_impl_sqlite.EmployeeProfileDataSqliteImpl;
+import data_impl_sqlite.ExitDataInMemoryImpl;
+import data_impl_sqlite.ExitInterviewDataSqliteImpl;
+import data_impl_sqlite.LeaveDataSqliteImpl;
+import data_impl_sqlite.PayrollDataSqliteImpl;
+import data_impl_sqlite.TimeTrackingDataSqliteImpl;
 import model.*;
 
 import java.awt.*;
@@ -26,6 +33,7 @@ public class MainGUI {
     private static IEmployeeProfileData  employeeData;
     static         IDocumentData         documentData;
     private static CustomizationFacade customization;
+    private static ExitInterviewManager interviewManager;
 
     // ── Application state ─────────────────────────────────────────────────────
     static final List<EmployeeRecord> employees = new ArrayList<>();
@@ -83,7 +91,7 @@ public class MainGUI {
     }
 
     // ── Global UI defaults ────────────────────────────────────────────────────
-    private static void applyUIDefaults() {
+    public static void applyUIDefaults() {
         UIManager.put("ComboBox.background",           BG_SURFACE);
         UIManager.put("ComboBox.foreground",           TEXT_PRIMARY);
         UIManager.put("ComboBox.selectionBackground",  new Color(0x2E2E36));
@@ -130,23 +138,23 @@ public class MainGUI {
 
     // ── Service wiring ────────────────────────────────────────────────────────
     private static void setupServices() {
-        DummyData dummy = new DummyData();
+        IExitData exitDataRef = new ExitDataInMemoryImpl();
+        IExitInterviewData interviewData = new ExitInterviewDataSqliteImpl();
+        IClearanceData clearanceData = new ClearanceDataSqliteImpl();
+        IPayrollData payrollData = new PayrollDataSqliteImpl();
+        ILeaveData leaveData = new LeaveDataSqliteImpl();
+        ITimeTrackingData attendanceData = new TimeTrackingDataSqliteImpl();
+        IEmployeeProfileData employeeDataRef = new EmployeeProfileDataSqliteImpl();
 
-        IExitData            exitDataRef     = dummy;
-        IExitInterviewData   interviewData   = dummy;
-        IAssetData           assetData       = dummy;
-        IUserAccountData     userData        = dummy;
-        IClearanceData       clearanceData   = dummy;
-        IPayrollData         payrollData     = dummy;
-        ILeaveData           leaveData       = dummy;
-        ITimeTrackingData    attendanceData  = dummy;
-        IEmployeeProfileData employeeDataRef = dummy;
+        DummyData dummy = new DummyData();
+        IAssetData assetData = dummy;
+        IUserAccountData userData = dummy;
         documentData = dummy;
 
         employeeData = employeeDataRef;
 
         ExitManager             exitManager      = new ExitManager(exitDataRef);
-        ExitInterviewManager    interviewManager = new ExitInterviewManager(interviewData);
+        interviewManager = new ExitInterviewManager(interviewData);
         RealClearanceService    realClearance    = new RealClearanceService(assetData, userData, clearanceData);
         ClearanceManager        proxyClearance   = new ProxyClearanceService(realClearance);
         SettlementService       settlementSvc    = new SettlementService(
@@ -163,6 +171,17 @@ public class MainGUI {
 
     public static CustomizationFacade getCustomization() {
         return customization;
+    }
+
+    // ── Integration method for OnboardingGUI ──────────────────────────────────
+    public static void setContentArea(JPanel area) {
+        contentArea = area;
+    }
+
+    public static JPanel initOffboarding() {
+        setupServices();
+        loadEmployeesFromDB();
+        return ListViewPanel.build(employees, MainGUI::showNewView);
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -242,14 +261,15 @@ public class MainGUI {
     // New-employee form submission
     // ═════════════════════════════════════════════════════════════════════════
     public static void submitNewEmployee() {
-        String   empId    = NewEmployeeView.empIdField.getText().trim();
-        String   name     = NewEmployeeView.nameField.getText().trim();
-        String   role     = NewEmployeeView.roleField.getText().trim();
-        String   dept     = (String) NewEmployeeView.deptBox.getSelectedItem();
-        java.util.Date date =
-        (java.util.Date) NewEmployeeView.lastDayPicker.getModel().getValue();
+        String empId = NewEmployeeView.empIdField.getText().trim();
+        String name  = NewEmployeeView.nameField.getText().trim();
+        String role  = NewEmployeeView.roleField.getText().trim();
+        String dept  = (String) NewEmployeeView.deptBox.getSelectedItem();
 
-    String lastDay = new java.text.SimpleDateFormat("yyyy-MM-dd").format(date);
+        java.util.Date date =
+            (java.util.Date) NewEmployeeView.lastDayPicker.getModel().getValue();
+
+        String lastDay = new java.text.SimpleDateFormat("yyyy-MM-dd").format(date);
 
         String exitTypeStr = (String) NewEmployeeView.exitTypeBox.getSelectedItem();
         ExitType exitType = mapExitType(exitTypeStr);
@@ -261,54 +281,24 @@ public class MainGUI {
             return;
         }
 
-        EmployeeRecord emp = new EmployeeRecord(empId, name, role, dept, lastDay, exitType);
+        // ✅ 1. CREATE EXIT REQUEST (THIS WAS MISSING)
+        ExitRequest req = new ExitRequest(
+            empId,
+            exitType,
+            "INITIATED",
+            lastDay
+        );
+
+        exitData.createExitRequest(req);   // 🔥 THIS FIXES YOUR ISSUE
+
+        // ✅ 2. Update UI
+        EmployeeRecord emp = EmployeeRecord.fromExitRequest(req);
         employees.add(0, emp);
+
         showDetailView(emp);
+
         appendDetailLog(emp,
             "Employee registered. Click 'Proceed: Exit registration' to begin.", BLUE);
-    }
-
-    // ═════════════════════════════════════════════════════════════════════════
-    // Pipeline step routing
-    // ═════════════════════════════════════════════════════════════════════════
-    public static void proceedNextStep(EmployeeRecord emp) {
-        String nextKey = emp.nextPendingKey();
-        if (nextKey == null) return;
-
-        IWorkflowIntegration wf = getCustomization().getWorkflowIntegration();
-
-        if (emp.workflowInstanceId == null) {
-            try {
-                int id = wf.triggerWorkflow("Exit Clearance", emp.empId);
-                emp.workflowInstanceId = id;
-
-                appendDetailLog(emp, "Workflow started (ID: " + id + ")", BLUE);
-
-            } catch (CustomizationException e) {
-                appendDetailLog(emp, "Workflow error: " + e.getMessage(), RED);
-                return;
-            }
-        }
-
-        switch (nextKey) {
-            case "interview":
-                ExitInterviewDialog.show(emp);
-                return;
-            case "clearance":
-                ClearanceScreen.show(emp, exitData.getExitDetails(emp.empId));
-                return;
-            case "knowledge":
-                KnowledgeTransferDialog.show(emp, documentData);
-                return;
-            case "settlement":
-                SettlementScreen.show(emp, offboardingService);
-                return;
-            case "docs":
-                DocumentScreen.show(emp, documentData);
-                return;
-            default:
-                runSingleStep(emp, nextKey);
-        }
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -334,6 +324,8 @@ public class MainGUI {
                 try {
                     IWorkflowIntegration wf =
                             getCustomization().getWorkflowIntegration();
+
+                    emp.workflowInstanceId = emp.empId.hashCode();
 
                     String status = wf.getWorkflowStatus(emp.workflowInstanceId);
 
@@ -405,6 +397,50 @@ public class MainGUI {
                 if (detailResetBtn != null) detailResetBtn.setEnabled(true);
             }
         }.execute();
+    }
+
+    public static void proceedNextStep(EmployeeRecord emp) {
+
+        String nextKey = emp.nextPendingKey();
+
+        if (nextKey == null) {
+            JOptionPane.showMessageDialog(null, "All steps completed.");
+            return;
+        }
+
+        switch (nextKey) {
+
+            case "exit":
+                runSingleStep(emp, "exit");
+                break;
+
+            case "interview":
+                ExitInterviewDialog.show(emp, interviewManager);
+                break;
+
+            case "clearance":
+                ClearanceScreen.show(emp, exitData.getExitDetails(emp.empId));
+                break;
+
+            case "knowledge":
+                KnowledgeTransferDialog.show(emp, documentData);
+                break;
+
+            case "settlement":
+                SettlementScreen.show(emp, offboardingService);
+                break;
+
+            case "docs":
+                DocumentScreen.show(emp, documentData);
+                break;
+
+            case "notify":
+                runSingleStep(emp, "notify");
+                break;
+
+            default:
+                JOptionPane.showMessageDialog(null, "Unknown step: " + nextKey);
+        }
     }
 
     // ═════════════════════════════════════════════════════════════════════════
