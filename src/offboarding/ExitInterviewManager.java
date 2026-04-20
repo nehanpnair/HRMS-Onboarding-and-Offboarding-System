@@ -11,6 +11,10 @@ public class ExitInterviewManager {
         this.data = data;
     }
 
+    public void recordExitInterview(model.ExitInterview interview) {
+        data.recordExitInterview(interview);
+    }
+
     public void conductInterview(String empID,
                                  String feedback,
                                  String reason,

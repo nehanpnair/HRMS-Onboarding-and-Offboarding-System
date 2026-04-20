@@ -75,7 +75,7 @@ public class SettlementService {
         }
 
         // 5. Reimbursements (dynamic, not hardcoded)
-        // assume 2% of salary (travel, claims, etc.)
+        // assume 1% of salary (travel, claims, etc.)
         double reimbursements = 0.01 * monthlySalary;
 
         // 6. Deductions (dynamic)
