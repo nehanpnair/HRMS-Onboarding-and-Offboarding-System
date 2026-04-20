@@ -1,6 +1,7 @@
 package gui;
 
 import integration.*;
+import offboarding.ExitInterviewManager;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -16,7 +17,7 @@ public final class ExitInterviewDialog {
 
     private ExitInterviewDialog() {}
 
-    public static void show(EmployeeRecord emp) {
+    public static void show(EmployeeRecord emp, ExitInterviewManager manager) {
         JDialog dialog = new JDialog((Frame) null,
                 "Exit Interview — " + emp.name, true);
         dialog.setSize(520, 520);
@@ -29,7 +30,7 @@ public final class ExitInterviewDialog {
 
         root.add(buildTitleBlock(emp), BorderLayout.NORTH);
 
-        JScrollPane scroll = new JScrollPane(buildForm(emp, dialog));
+        JScrollPane scroll = new JScrollPane(buildForm(emp, dialog, manager));
         scroll.setBorder(null);
         scroll.getViewport().setBackground(BG_CARD);
 
@@ -56,7 +57,7 @@ public final class ExitInterviewDialog {
         return titleRow;
     }
 
-    private static JPanel buildForm(EmployeeRecord emp, JDialog dialog) {
+    private static JPanel buildForm(EmployeeRecord emp, JDialog dialog, ExitInterviewManager manager) {
 
         IFormIntegration formIntegration =
                 MainGUI.getCustomization().getFormIntegration();
@@ -78,7 +79,6 @@ public final class ExitInterviewDialog {
 
         Map<String, JComponent> fieldMap = new HashMap<>();
 
-        // 🔥 Build fields dynamically
         for (IFormIntegration.Field f : formDef.fields) {
 
             JComponent comp;
@@ -128,7 +128,7 @@ public final class ExitInterviewDialog {
         }
 
         wrapper.add(formPanel, BorderLayout.CENTER);
-        wrapper.add(buildButtonRow(emp, dialog, fieldMap, formIntegration, formDef),
+        wrapper.add(buildButtonRow(emp, dialog, fieldMap, formIntegration, formDef, manager),
                 BorderLayout.SOUTH);
 
         return wrapper;
@@ -137,7 +137,7 @@ public final class ExitInterviewDialog {
     private static JPanel buildButtonRow(EmployeeRecord emp, JDialog dialog,
                                           Map<String, JComponent> fieldMap,
                                           IFormIntegration formIntegration,
-                                          IFormIntegration.FormDefinition formDef) {
+                                          IFormIntegration.FormDefinition formDef, ExitInterviewManager manager) {
 
         JButton cancelBtn = ghostButton("Cancel");
         JButton saveBtn   = primaryButton("Save & Proceed");
@@ -176,6 +176,15 @@ public final class ExitInterviewDialog {
                 }
             }
 
+            model.ExitInterview interview = new model.ExitInterview(
+                    "INT-" + emp.empId,     
+                    emp.empId,
+                    emp.feedback,          
+                    emp.reason,
+                    5                      
+            );
+
+            manager.recordExitInterview(interview);
             emp.interviewDataCollected = true;
 
             dialog.dispose();
