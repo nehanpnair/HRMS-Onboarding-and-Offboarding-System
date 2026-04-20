@@ -10,13 +10,12 @@ import java.util.List;
 import integration.IEmployeeIntegration;
 
 // Customization imports
-// (use mock for now)
-import CustomizationFacade;
-import MockCustomizationFacade;
-import IWorkflowIntegration;
-import ILookupIntegration;
-import IFormIntegration;
-import CustomizationException;
+import customization.CustomizationFacade;
+import customization.MockCustomizationFacade;
+import customization.IWorkflowIntegration;
+import customization.ILookupIntegration;
+import customization.IFormIntegration;
+import customization.CustomizationException;
 
 /**
  * Handles Employee-related operations.
