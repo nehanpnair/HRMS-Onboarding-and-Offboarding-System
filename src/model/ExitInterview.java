@@ -16,9 +16,14 @@ public class ExitInterview {
         this.reason = reason;
         this.rating = rating;
     }
+    
+    public String getInterviewId() { return interviewID; }
 
-    public String getEmployeeID() { return employeeID; }
+    public String getEmpId() { return employeeID; }
+
     public String getFeedback() { return feedback; }
+
     public String getReason() { return reason; }
+
     public int getRating() { return rating; }
 }
