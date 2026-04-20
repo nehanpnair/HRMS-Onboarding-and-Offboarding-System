@@ -1,7 +1,7 @@
 package onboarding.service;
 
-import model.Candidate;
-import model.Employee;
+import model.model.Candidate;
+import model.model.Employee;
 import onboarding.exception.ErrorCodes;
 import onboarding.exception.OnboardingException;
 import proxy.RoleAccessProxy;

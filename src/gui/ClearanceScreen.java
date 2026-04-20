@@ -1,6 +1,6 @@
 package gui;
 
-import model.ExitRequest;
+import model.model.ExitRequest;
 
 import javax.swing.*;
 import javax.swing.border.*;

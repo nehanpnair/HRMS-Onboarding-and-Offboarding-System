@@ -1,6 +1,7 @@
 package gui;
 
 import integration.*;
+import customization.*;
 
 import javax.swing.*;
 import javax.swing.border.*;

@@ -1,7 +1,7 @@
 package offboarding;
 
-import data.IExitData;
-import model.ExitRequest;
+import data.data.IExitData;
+import model.model.ExitRequest;
 
 public class ExitManager implements IExitData {
 

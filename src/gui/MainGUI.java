@@ -4,11 +4,12 @@ import offboarding.*;
 import notification.*;
 import progress.*;
 import integration.*;
+import customization.*;
 
 import javax.swing.*;
 
-import data.*;
-import model.*;
+import data.data.*;
+import model.model.*;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -158,7 +159,7 @@ public class MainGUI {
             new DocumentGenerator(), new NotificationService(),
             new ProgressTracker(), ktService);
 
-        customization = new MockCustomizationFacade();
+        customization = CustomizationFacade.getInstance();
     }
 
     public static CustomizationFacade getCustomization() {

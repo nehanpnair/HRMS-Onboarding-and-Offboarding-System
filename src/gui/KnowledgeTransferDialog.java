@@ -1,6 +1,6 @@
 package gui;
 
-import data.IDocumentData;
+import data.data.IDocumentData;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -76,7 +76,7 @@ public final class KnowledgeTransferDialog {
             JFileChooser chooser = new JFileChooser();
             if (chooser.showOpenDialog(dialog) == JFileChooser.APPROVE_OPTION) {
                 File f = chooser.getSelectedFile();
-                model.Document doc = new model.Document(
+                model.model.Document doc = new model.model.Document(
                     "DOC-" + emp.empId, emp.empId, "Knowledge Transfer Report", "UPLOADED");
                 documentData.uploadDocument(doc);
                 statusLabel.setText("Uploaded: " + f.getName());
@@ -132,10 +132,10 @@ public final class KnowledgeTransferDialog {
 
         verifyBtn.addActionListener(e -> {
             // Check that a KT report has been uploaded for this employee
-            List<model.Document> docs = documentData.getDocumentsByEmployee(emp.empId);
+            List<model.model.Document> docs = documentData.getDocumentsByEmployee(emp.empId);
             boolean found = false;
             if (docs != null) {
-                for (model.Document d : docs) {
+                for (model.model.Document d : docs) {
                     if ("Knowledge Transfer Report".equals(d.getType())) {
                         found = true;
                         break;

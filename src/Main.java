@@ -1,8 +1,8 @@
 /*This simulates a controller layer invoking our services. */
 
 import service.*;
-import model.*;
-import data.*;
+import model.model.*;
+import data.data.*;
 import strategy.*;
 import proxy.*;
 import factory.*;
@@ -10,35 +10,31 @@ import factory.*;
 public class Main {
 
     public static void main(String[] args) {
+        // TEMP DB CONNECTION TEST
+        try {
+            Class.forName("org.sqlite.JDBC");
+            java.sql.Connection conn = java.sql.DriverManager.getConnection("jdbc:sqlite:hrms.db");
 
-        // 🔹 MOCK DATA IMPLEMENTATIONS (for demo)
-        IEmployeeProfileData empData = new IEmployeeProfileData() {
-            @Override
-            public Employee getEmployeeById(String employeeID) {
-                return EmployeeFactory.createBasicEmployee(employeeID, "Niharika");
+            System.out.println("DB Connected");
+
+            java.sql.Statement stmt = conn.createStatement();
+            java.sql.ResultSet rs = stmt.executeQuery("SELECT name FROM sqlite_master WHERE type='table';");
+
+            while (rs.next()) {
+                System.out.println("Table: " + rs.getString("name"));
             }
 
-            @Override
-            public java.util.List<Employee> getAllEmployees() {
-                return null;
-            }
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-            @Override
-            public void updateEmployeeStatus(String employeeID, String status) {}
-        };
+        // 🔻 KEEP YOUR EXISTING CODE BELOW (DO NOT DELETE)
 
-        IUserAccountData accountData = new IUserAccountData() {
-            public UserAccount getUserByUsername(String username) { return null; }
-            public void createUserAccount(UserAccount account) {}
-            public void updatePassword(String userID, String password) {}
-            public void updateAccessStatus(String userID, String status) {}
-        };
-
-        IAssetData assetData = new IAssetData() {
-            public void allocateAsset(String employeeID, String assetType) {}
-            public void updateAllocationStatus(String assetID, String status) {}
-            public java.util.List<Asset> getAssetsByEmployee(String employeeID) { return null; }
-        };
+        // 🔹 REAL DATA IMPLEMENTATIONS (using DB)
+        IEmployeeProfileData empData = new EmployeeProfileDataImpl();
+        IUserAccountData accountData = new UserAccountDataImpl();
+        IAssetData assetData = new AssetDataImpl();
 
         // 🔹 SERVICES
         EmployeeService empService = new EmployeeService(empData);

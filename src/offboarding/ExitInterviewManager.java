@@ -1,7 +1,7 @@
 package offboarding;
 
-import data.IExitInterviewData;
-import model.ExitInterview;
+import data.data.IExitInterviewData;
+import model.model.ExitInterview;
 
 public class ExitInterviewManager {
 

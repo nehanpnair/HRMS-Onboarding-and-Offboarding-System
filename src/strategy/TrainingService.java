@@ -1,6 +1,6 @@
-package service;
+package strategy;
 
-import model.Employee;
+import model.model.Employee;
 import strategy.TrainingStrategy;
 
 /**

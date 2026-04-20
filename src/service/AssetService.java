@@ -1,8 +1,7 @@
 package service;
 
-import data.IAssetData;
-import model.Asset;
-import exception.AssetAllocationException;
+import data.data.IAssetData;
+import model.model.Asset;
 
 import java.util.List;
 

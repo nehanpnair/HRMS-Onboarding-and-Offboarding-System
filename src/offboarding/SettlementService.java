@@ -1,10 +1,10 @@
 package offboarding;
 
-import data.IPayrollData;
-import data.ILeaveData;
-import data.ITimeTrackingData;
-import data.IAssetData;
-import data.IEmployeeProfileData;
+import data.data.IPayrollData;
+import data.data.ILeaveData;
+import data.data.ITimeTrackingData;
+import data.data.IAssetData;
+import data.data.IEmployeeProfileData;
 
 /**
  * Handles final settlement calculation using realistic HR logic.

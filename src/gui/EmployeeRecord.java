@@ -1,6 +1,6 @@
 package gui;
 
-import model.ExitRequest;
+import model.model.ExitRequest;
 import offboarding.ExitType;
 
 import java.awt.Color;
