@@ -1,7 +1,7 @@
 package onboarding.handler;
 
-import data.IPolicyData;
-import model.Policy;
+import data.data.IPolicyData;
+import model.model.Policy;
 import onboarding.exception.ErrorCodes;
 import onboarding.exception.OnboardingException;
 import onboarding.util.VerificationExecutor;

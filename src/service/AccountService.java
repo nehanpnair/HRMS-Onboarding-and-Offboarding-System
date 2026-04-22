@@ -1,8 +1,7 @@
 package service;
 
-import model.UserAccount;
-import data.IUserAccountData;
-import exception.AccessProvisionException;
+import model.model.UserAccount;
+import data.data.IUserAccountData;
 
 /**
  * Handles user account creation and access control.

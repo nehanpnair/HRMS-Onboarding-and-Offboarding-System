@@ -1,12 +1,12 @@
 package onboarding.service;
 
-import data.IDocumentData;
-import data.IPolicyData;
-import data.IPreOnboardingData;
-import data.IReferenceCheckData;
+import data.data.IDocumentData;
+import data.data.IPolicyData;
+import data.data.IPreOnboardingData;
+import data.data.IReferenceCheckData;
 import factory.EmployeeFactory;
-import model.Candidate;
-import model.Employee;
+import model.model.Candidate;
+import model.model.Employee;
 import onboarding.exception.ErrorCodes;
 import onboarding.exception.OnboardingException;
 import onboarding.handler.DocumentVerificationHandler;

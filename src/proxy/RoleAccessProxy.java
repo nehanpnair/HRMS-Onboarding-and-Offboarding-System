@@ -1,6 +1,6 @@
 package proxy;
 
-import model.Employee;
+import model.model.Employee;
 
 /**
  * Proxy Pattern:

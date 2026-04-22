@@ -1,9 +1,9 @@
 package onboarding.handler;
 
-import data.IPreOnboardingData;
+import data.data.IPreOnboardingData;
 import factory.EmployeeFactory;
-import model.Candidate;
-import model.Employee;
+import model.model.Candidate;
+import model.model.Employee;
 import onboarding.exception.ErrorCodes;
 import onboarding.exception.OnboardingException;
 

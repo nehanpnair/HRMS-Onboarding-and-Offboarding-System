@@ -1,7 +1,7 @@
 package offboarding;
 
-import data.IDocumentData;
-import model.Document;
+import data.data.IDocumentData;
+import model.model.Document;
 
 /**
  * Handles backend generation of exit-related documents.

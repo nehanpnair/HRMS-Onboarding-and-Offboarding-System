@@ -1,8 +1,7 @@
 package service;
 
-import model.*;
-import data.*;
-import exception.*;
+import model.model.*;
+import data.data.*;
 
 import java.util.List;
 
@@ -10,12 +9,8 @@ import java.util.List;
 import integration.IEmployeeIntegration;
 
 // Customization imports
-import customization.CustomizationFacade;
-import customization.MockCustomizationFacade;
-import customization.IWorkflowIntegration;
-import customization.ILookupIntegration;
-import customization.IFormIntegration;
-import customization.CustomizationException;
+// (use mock for now)
+import customization.*;
 
 /**
  * Handles Employee-related operations.

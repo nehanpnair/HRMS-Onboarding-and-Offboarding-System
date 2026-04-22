@@ -1,6 +1,6 @@
 package strategy;
 
-import model.Employee;
+import model.model.Employee;
 
 /**
  * Strategy interface for training assignment.

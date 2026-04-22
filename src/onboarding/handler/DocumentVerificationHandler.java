@@ -1,7 +1,7 @@
 package onboarding.handler;
 
-import data.IDocumentData;
-import model.Document;
+import data.data.IDocumentData;
+import model.model.Document;
 import onboarding.exception.ErrorCodes;
 import onboarding.exception.OnboardingException;
 import onboarding.util.VerificationExecutor;

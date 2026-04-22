@@ -1,7 +1,7 @@
 package onboarding.handler;
 
-import data.IReferenceCheckData;
-import model.ReferenceCheck;
+import data.data.IReferenceCheckData;
+import model.model.ReferenceCheck;
 import onboarding.exception.ErrorCodes;
 import onboarding.exception.OnboardingException;
 

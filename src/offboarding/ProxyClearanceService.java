@@ -1,6 +1,6 @@
 package offboarding;
 
-import model.ExitRequest;
+import model.model.ExitRequest;
 
 /**
  * Proper Proxy: controls access using ExitRequest state

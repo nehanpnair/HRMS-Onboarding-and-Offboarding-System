@@ -1,8 +1,8 @@
 package offboarding;
 
-import data.IAssetData;
-import data.IUserAccountData;
-import data.IClearanceData;
+import data.data.IAssetData;
+import data.data.IUserAccountData;
+import data.data.IClearanceData;
 
 public class RealClearanceService implements ClearanceManager {
 
