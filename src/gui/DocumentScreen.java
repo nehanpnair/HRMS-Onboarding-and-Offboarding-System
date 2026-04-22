@@ -1,6 +1,6 @@
 package gui;
 
-import data.IDocumentData;
+import data.data.IDocumentData;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -86,7 +86,7 @@ public final class DocumentScreen {
             JFileChooser chooser = new JFileChooser();
             if (chooser.showOpenDialog(card) == JFileChooser.APPROVE_OPTION) {
                 File f = chooser.getSelectedFile();
-                model.Document doc = new model.Document(
+                model.model.Document doc = new model.model.Document(
                     "DOC-" + emp.empId + "-" + docName,
                     emp.empId, docName, "UPLOADED");
                 documentData.uploadDocument(doc);

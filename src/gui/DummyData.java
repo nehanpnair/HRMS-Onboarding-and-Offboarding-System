@@ -1,7 +1,7 @@
 package gui;
 
-import data.*;
-import model.*;
+import data.data.*;
+import model.model.*;
 import java.util.*;
 
 public class DummyData implements 

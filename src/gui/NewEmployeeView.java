@@ -7,8 +7,9 @@ import java.util.Properties;
 
 import org.jdatepicker.impl.*;
 
-import integration.CustomizationException;
-import integration.ILookupIntegration;
+import customization.CustomizationException;
+import customization.ILookupIntegration;
+import customization.*;
 
 import static gui.Theme.*;
 import static gui.UIFactory.*;
